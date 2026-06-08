@@ -110,6 +110,85 @@ await el.get_html()  # outer HTML as string
 
 ---
 
+## Working with the dataset
+
+The dataset is where your scraped items live. Every handler has access to `ctx.dataset` — call `push()` with any JSON-serialisable dict and ZenCrawler takes care of writing it to storage.
+
+### Pushing items
+
+```python
+@router.default
+async def handler(ctx):
+    title = await ctx.page.query_selector("h1")
+    price = await ctx.page.query_selector(".price_color")
+
+    if title:
+        await ctx.dataset.push({
+            "title": title.text,
+            "price": price.text if price else None,
+            "url":   ctx.request.url,
+            "depth": ctx.request.depth,
+        })
+```
+
+### Reading results after the crawl
+
+Once `run()` returns, iterate `crawler.dataset` to access everything collected — all inside the `async with` block:
+
+```python
+async with Crawler(router=router, max_requests=50) as crawler:
+    result = await crawler.run(["https://books.toscrape.com/"])
+
+    print(f"{result.items_pushed} items collected\n")
+
+    async for item in crawler.dataset.iter():
+        print(f"{item['title']}  —  {item['price']}")
+```
+
+### Exporting to JSON
+
+```python
+import json
+
+async with Crawler(router=router, max_requests=50) as crawler:
+    await crawler.run(["https://books.toscrape.com/"])
+
+    items = [item async for item in crawler.dataset.iter()]
+
+Path("results.json").write_text(json.dumps(items, indent=2))
+```
+
+### Named datasets
+
+When you're scraping multiple item types, keep them in separate datasets:
+
+```python
+@router.on(label="product")
+async def handle_product(ctx):
+    await ctx.dataset.push({"title": ..., "price": ...})          # default dataset
+
+@router.on(label="review")
+async def handle_review(ctx):
+    await ctx.get_dataset("reviews").push({"text": ..., "rating": ...})  # named dataset
+```
+
+Read them back the same way:
+
+```python
+async with Crawler(router=router) as crawler:
+    await crawler.run(seeds)
+
+    products = [item async for item in crawler.dataset.iter()]
+    reviews  = [item async for item in crawler.get_dataset("reviews").iter()]
+```
+
+!!! warning "Dataset is only available inside the `async with` block"
+    Storage closes when the block exits. Iterate or export your data **before** the block ends.
+    The one thing that's safe to read afterwards is `result.items_pushed` — it's just an integer
+    on the `CrawlResult` and is always available.
+
+---
+
 ## Using labels
 
 Labels let you route different page types to different handlers:
