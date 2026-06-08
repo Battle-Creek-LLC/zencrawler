@@ -18,7 +18,7 @@ pip install "zencrawler[sqlite]"
 
 ## Your first crawler
 
-The following example crawls [books.toscrape.com](https://books.toscrape.com), extracts book titles and prices, and saves them to a dataset.
+The following example crawls [books.toscrape.com](https://books.toscrape.com), extracts page titles, and prints them when the crawl finishes.
 
 ```python title="first_crawl.py"
 import asyncio
@@ -28,50 +28,32 @@ router = Router()
 
 
 @router.default
-async def handle_page(ctx):
-    page = ctx.page
+async def handler(ctx):
+    title = await ctx.page.query_selector("h1")
+    if title:
+        await ctx.dataset.push({"title": title.text, "url": ctx.request.url})
 
-    # Extract title and price from the current page
-    title_el = await page.query_selector("h1")
-    price_el  = await page.query_selector(".price_color")
-
-    if title_el and price_el:
-        await ctx.dataset.push({
-            "title": title_el.text.strip(),
-            "price": price_el.text.strip(),
-            "url":   ctx.request.url,
-            "depth": ctx.request.depth,
-        })
-
-    # Follow links to other pages on the same domain
-    import urllib.parse
-    base = urllib.parse.urlparse(ctx.request.url)
-    for a in await page.select_all("a[href]"):
-        href = a.get("href")
-        if not href:
-            continue
-        abs_url = urllib.parse.urljoin(ctx.request.url, href)
-        parsed  = urllib.parse.urlparse(abs_url)
-        if parsed.netloc == base.netloc:
-            await ctx.enqueue(abs_url)
+    links = await ctx.page.select_all("a[href]")
+    await ctx.enqueue_all([a.get("href") for a in links if a.get("href")])
 
 
 async def main():
-    async with Crawler(
-        router=router,
-        max_requests=50,   # stop after 50 pages
-        max_concurrency=3,
-    ) as crawler:
+    async with Crawler(router=router, max_requests=50) as crawler:
         result = await crawler.run(["https://books.toscrape.com/"])
 
-    print(f"Pages:  {result.requests_done}")
-    print(f"Items:  {result.items_pushed}")
-    print(f"Errors: {result.requests_dead_letter}")
-    print(f"Time:   {result.elapsed_seconds:.1f}s")
+        # Read the dataset here — inside the block, before storage closes
+        print(f"Done — {result.requests_done} pages, {result.items_pushed} items\n")
+        async for item in crawler.dataset.iter():
+            print(f"  {item['title']}")
 
 
 asyncio.run(main())
 ```
+
+!!! warning "Access the dataset inside the `async with` block"
+    `crawler.dataset` is only available while the `async with` block is open — storage closes
+    when the block exits. Always read or iterate the dataset **before** the block ends.
+    After the block, use `result.items_pushed` for the count.
 
 Run it:
 

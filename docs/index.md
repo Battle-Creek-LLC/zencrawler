@@ -21,7 +21,12 @@ async def handler(ctx):
 async def main():
     async with Crawler(router=router, max_requests=50) as crawler:
         result = await crawler.run(["https://books.toscrape.com/"])
-        print(f"Done — {result.requests_done} pages, {result.items_pushed} items")
+
+        # Dataset is available here, inside the block
+        async for item in crawler.dataset.iter():
+            print(item["title"])
+
+    print(f"Done — {result.requests_done} pages, {result.items_pushed} items")
 ```
 
 ---
