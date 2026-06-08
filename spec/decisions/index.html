@@ -1,0 +1,1324 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Async Python web crawler built on zendriver/CDP">
+      
+      
+      
+        <link rel="canonical" href="https://battle-creek-llc.github.io/zencrawler/spec/decisions/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Design Decisions - ZenCrawler</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#design-decisions" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ZenCrawler" class="md-header__button md-logo" aria-label="ZenCrawler" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ZenCrawler
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Design Decisions
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Battle-Creek-LLC/zencrawler" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Battle-Creek-LLC/zencrawler
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../guides/routing/" class="md-tabs__link">
+          
+  
+  
+  Guides
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/crawler/" class="md-tabs__link">
+          
+  
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ZenCrawler" class="md-nav__button md-logo" aria-label="ZenCrawler" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ZenCrawler
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Battle-Creek-LLC/zencrawler" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Battle-Creek-LLC/zencrawler
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/routing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Routing Requests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Storing Data
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/error-handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error Handling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/concurrency/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concurrency & Rate Limiting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/crawler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Crawler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/router/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Router
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/context/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CrawlContext
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/request/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Request
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/results/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results & Stats
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Errors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Non-Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#open-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Open Questions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Open Questions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-queue-default-memory-or-sqlite" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Queue default: memory or sqlite?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-fresh-context-vs-browser-reuse-granularity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Fresh context vs browser reuse granularity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-etld1-domain-bucketing-without-external-deps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. eTLD+1 domain bucketing without external deps
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-handler-return-error-contract-enum-vs-sentinel-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Handler return / error contract: enum vs sentinel exceptions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-multiple-datasets-in-v1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Multiple datasets in v1
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design-decision-log" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design Decision Log
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="design-decisions">Design Decisions<a class="headerlink" href="#design-decisions" title="Permanent link">&para;</a></h1>
+<p>Non-goals, open questions, and the rationale log for significant choices.</p>
+<hr />
+<h2 id="non-goals">Non-Goals<a class="headerlink" href="#non-goals" title="Permanent link">&para;</a></h2>
+<p>These are explicitly excluded. Each has a reason and a note on the extension
+point if a user needs it anyway.</p>
+<table>
+<thead>
+<tr>
+<th>Excluded</th>
+<th>Reason</th>
+<th>Extension point</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fingerprint injection / user-agent spoofing</td>
+<td>zendriver handles at CDP level; duplicating creates conflicts and false confidence</td>
+<td>Configure via <code>BrowserPoolConfig.launch_args</code> and zendriver's own API</td>
+</tr>
+<tr>
+<td>Proxy rotation</td>
+<td>Operational infra concern, not orchestration; proxy assignment belongs outside the library</td>
+<td>Pass proxy via <code>launch_args</code> per Chrome process; swap BrowserPool for custom implementation</td>
+</tr>
+<tr>
+<td>Distributed queue (Redis, Kafka, SQS)</td>
+<td>Adds external service dependency; single-process SQLite covers the vast majority of use cases</td>
+<td>Implement <code>QueueBackend</code> Protocol</td>
+</tr>
+<tr>
+<td>HTTP-only requests (no browser)</td>
+<td>Different tool (httpx, aiohttp); mixing abstractions muddies the API</td>
+<td>Use <code>aiohttp</code> directly in a handler for API calls; <code>ctx.page</code> does not need to navigate</td>
+</tr>
+<tr>
+<td>JavaScript injection / raw CDP commands</td>
+<td>Exposed via <code>ctx.page</code> (zendriver passthrough); no wrapper needed or desired</td>
+<td><code>ctx.page.evaluate(...)</code>, <code>ctx.page.cdp_cmd(...)</code></td>
+</tr>
+<tr>
+<td>Login / session orchestration</td>
+<td>Sticky sessions (v2) are the primitive; multi-step login flows are handler logic</td>
+<td>Implement in <code>before_request</code> hook + Store for token persistence</td>
+</tr>
+<tr>
+<td>CAPTCHA solving</td>
+<td>Requires third-party service with API keys and billing; out of scope</td>
+<td>Raise <code>SkipRequest</code> in <code>on_error(BotBlockError)</code>, integrate CAPTCHA service externally</td>
+</tr>
+<tr>
+<td>Link extraction helpers</td>
+<td>Handler code; BeautifulSoup/parsel/cssselect are user's choice</td>
+<td>Use any parser library in handler code</td>
+</tr>
+<tr>
+<td>Visual regression / screenshot diffing</td>
+<td>Testing concern; <code>ctx.page.save_screenshot()</code> is the escape hatch</td>
+<td>Call <code>save_screenshot()</code> in <code>after_request</code> hook, diff externally</td>
+</tr>
+<tr>
+<td>Schema validation on Dataset</td>
+<td>User's responsibility; Pydantic/attrs/dataclasses all work</td>
+<td>Validate before <code>ctx.dataset.push()</code></td>
+</tr>
+<tr>
+<td>Built-in cloud export (S3, GCS, BigQuery)</td>
+<td>Adds cloud SDK dependencies; implement <code>StorageBackend</code> Protocol instead</td>
+<td>Implement <code>StorageBackend</code> Protocol</td>
+</tr>
+<tr>
+<td>robots.txt compliance</td>
+<td>Policy, not mechanism; different sites have different requirements</td>
+<td>Read and parse <code>robots.txt</code> in handler or <code>before_request</code> hook</td>
+</tr>
+<tr>
+<td>Sitemap parsing</td>
+<td>Application-level logic; trivial to implement in a handler</td>
+<td>Fetch and parse <code>sitemap.xml</code> in seed handler</td>
+</tr>
+<tr>
+<td>Headless browser alternatives (Playwright, Puppeteer)</td>
+<td>zendriver is the explicit foundation; abstraction over multiple drivers adds complexity</td>
+<td>Fork or wrap the library</td>
+</tr>
+<tr>
+<td>Multi-process / multiprocessing crawling</td>
+<td>asyncio single-process is the design constraint; multi-process needs IPC for queue and storage</td>
+<td>Run multiple Crawler instances pointing at shared SQLite queue [SCOPE RISK]</td>
+</tr>
+<tr>
+<td>Scheduled / cron crawling</td>
+<td>Operational concern; combine with a cron scheduler externally</td>
+<td><code>python-crontab</code>, systemd timers, or cloud schedulers</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="open-questions">Open Questions<a class="headerlink" href="#open-questions" title="Permanent link">&para;</a></h2>
+<p>Design decisions that have meaningful tradeoffs and require a human call before
+implementation begins.</p>
+<hr />
+<h3 id="1-queue-default-memory-or-sqlite">1. Queue default: <code>memory</code> or <code>sqlite</code>?<a class="headerlink" href="#1-queue-default-memory-or-sqlite" title="Permanent link">&para;</a></h3>
+<p><strong>Context:</strong> The default affects developer experience on first run and prod reliability.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Developer experience</th>
+<th>Production</th>
+<th>On crash</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Memory (default)</td>
+<td>Zero setup, instant</td>
+<td>Must opt in to SQLite</td>
+<td>State lost</td>
+</tr>
+<tr>
+<td>SQLite (default)</td>
+<td>File created on first run</td>
+<td>Works out of the box</td>
+<td>Recovers</td>
+</tr>
+<tr>
+<td>Memory (default) + warning if no <code>queue=</code> set</td>
+<td>Best of both</td>
+<td>Must be intentional</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Tradeoff:</strong> SQLite as default means every dev run creates a <code>crawl_data.db</code> file.
+Memory as default means production users must remember to set <code>queue="sqlite"</code> or
+lose progress on crash.</p>
+<p><strong>Recommendation:</strong> Memory default, but emit a one-time <code>WARNING</code> log if
+<code>max_requests</code> is not set and the crawl processes more than 1,000 requests
+(suggesting a large crawl that probably wants persistence).</p>
+<p><strong>✅ Resolved:</strong> Accept recommendation — <code>queue="memory"</code> default, with the
+large-crawl warning.</p>
+<hr />
+<h3 id="2-fresh-context-vs-browser-reuse-granularity">2. Fresh context vs browser reuse granularity<a class="headerlink" href="#2-fresh-context-vs-browser-reuse-granularity" title="Permanent link">&para;</a></h3>
+<p><strong>Context:</strong> The current design creates a fresh CDP <code>BrowserContext</code> (incognito) per
+request, reusing the Chrome process.</p>
+<p><strong>Question:</strong> Does zendriver's bot evasion hold at this granularity? Some bot-detection
+systems may correlate CDP sessions within a single browser process (same process ID,
+rotating contexts). If so, fresh Chrome processes may be required — at ~500ms cost
+per request.</p>
+<p><strong>Options:</strong>
+- A: Current design — fresh context, reuse process (fast, may be detectable)
+- B: Fresh process per request (slow, maximum isolation)
+- C: Fresh process per N requests, configurable <code>process_recycle_after=50</code> (middle ground)
+- D: Both A and C available; user configures (complexity cost)</p>
+<p><strong>Call needed:</strong> What isolation level does zendriver actually need for mainstream target sites?</p>
+<hr />
+<h3 id="3-etld1-domain-bucketing-without-external-deps">3. eTLD+1 domain bucketing without external deps<a class="headerlink" href="#3-etld1-domain-bucketing-without-external-deps" title="Permanent link">&para;</a></h3>
+<p><strong>Context:</strong> Per-domain rate limiting groups requests to <code>blog.example.co.uk</code> and
+<code>shop.example.co.uk</code> into one bucket when <code>per="domain"</code>. Accurate eTLD+1 extraction
+needs the Mozilla Public Suffix List (~200KB data file).</p>
+<p><strong>Options:</strong>
+- A: Bundle PSL as a data file — accurate, zero runtime deps, adds 200KB to package
+- B: Use heuristic (2-char second-to-last TLD part) — zero cost, wrong for some ccTLDs
+- C: Default to <code>per="netloc"</code> (per-subdomain) — simple, occasionally over-permissive
+- D: Auto-detect <code>tldextract</code> if installed — best accuracy when available, heuristic fallback</p>
+<p><strong>Recommendation:</strong> Option D. The library should not penalise users who don't need it.</p>
+<p><strong>✅ Resolved:</strong> Option D — auto-detect <code>tldextract</code> if installed, heuristic fallback
+otherwise. Document as <code>pip install zencrawler[tldextract]</code> for accurate bucketing.</p>
+<hr />
+<h3 id="4-handler-return-error-contract-enum-vs-sentinel-exceptions">4. Handler return / error contract: enum vs sentinel exceptions<a class="headerlink" href="#4-handler-return-error-contract-enum-vs-sentinel-exceptions" title="Permanent link">&para;</a></h3>
+<p><strong>Context:</strong> When a handler wants to explicitly skip or retry, two styles are possible.</p>
+<p><strong>Style A — ErrorAction return value (current design):</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nd">@router</span><span class="o">.</span><span class="n">on_error</span><span class="p">(</span><span class="n">BotBlockError</span><span class="p">)</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">handle</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ErrorAction</span><span class="p">:</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="k">return</span> <span class="n">ErrorAction</span><span class="o">.</span><span class="n">SKIP</span>
+</span></code></pre></div></p>
+<p><strong>Style B — Sentinel exceptions raised from handlers:</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nd">@router</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="s2">&quot;https://example.com/**&quot;</span><span class="p">)</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">handler</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="k">if</span> <span class="n">is_blocked</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">page</span><span class="p">):</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>        <span class="k">raise</span> <span class="n">SkipRequest</span><span class="p">(</span><span class="s2">&quot;bot block detected&quot;</span><span class="p">)</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="k">if</span> <span class="n">needs_retry</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">page</span><span class="p">):</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>        <span class="k">raise</span> <span class="n">RetryRequest</span><span class="p">(</span><span class="s2">&quot;not ready yet&quot;</span><span class="p">,</span> <span class="n">delay</span><span class="o">=</span><span class="mf">5.0</span><span class="p">)</span>
+</span></code></pre></div></p>
+<p>Style A: error hooks and handlers are cleanly separated; explicit return type.
+Style B: more Pythonic; handler logic and skip/retry decisions are co-located.</p>
+<p><strong>✅ Resolved:</strong> Both styles supported. <code>ErrorAction</code> returned from <code>on_error</code> hooks
+(Style A). <code>SkipRequest</code> raised from handlers or <code>before_request</code> hooks (Style B
+subset). <code>RetryRequest</code> deferred to v2 — direct retry with custom delay complicates
+the queue state machine.</p>
+<hr />
+<h3 id="5-multiple-datasets-in-v1">5. Multiple datasets in v1<a class="headerlink" href="#5-multiple-datasets-in-v1" title="Permanent link">&para;</a></h3>
+<p><strong>Context:</strong> <code>ctx.dataset</code> is the default. Named datasets are accessed via
+<code>ctx.get_dataset("name")</code>.</p>
+<p>Single dataset with type tag:
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">await</span> <span class="n">ctx</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">push</span><span class="p">({</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;product&quot;</span><span class="p">,</span> <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="o">...</span><span class="p">,</span> <span class="s2">&quot;price&quot;</span><span class="p">:</span> <span class="o">...</span><span class="p">})</span>
+</span></code></pre></div></p>
+<p>Named datasets:
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">await</span> <span class="n">ctx</span><span class="o">.</span><span class="n">get_dataset</span><span class="p">(</span><span class="s2">&quot;products&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">push</span><span class="p">({</span><span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="o">...</span><span class="p">,</span> <span class="s2">&quot;price&quot;</span><span class="p">:</span> <span class="o">...</span><span class="p">})</span>
+</span></code></pre></div></p>
+<p>Named datasets simplify export and avoid heterogeneous CSV columns. They add
+API surface but are trivial to implement (keyed dict of Dataset instances).</p>
+<p><strong>✅ Resolved:</strong> Named datasets included in v1. The <code>ctx.get_dataset(name)</code> API is
+confirmed. Default dataset name is <code>"default"</code>.</p>
+<hr />
+<h2 id="design-decision-log">Design Decision Log<a class="headerlink" href="#design-decision-log" title="Permanent link">&para;</a></h2>
+<p>Significant choices already made, for audit purposes.</p>
+<table>
+<thead>
+<tr>
+<th>Decision</th>
+<th>Chosen</th>
+<th>Rejected</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Concurrency primitive</td>
+<td><code>asyncio.Semaphore</code></td>
+<td>Thread pool, <code>asyncio.Queue</code>-based</td>
+<td>Semaphore directly maps to "slots"; simplest correct implementation</td>
+</tr>
+<tr>
+<td>Rate limiting algorithm</td>
+<td>Token bucket</td>
+<td>Leaky bucket, sliding window</td>
+<td>Token bucket allows burst (better UX for low-traffic starts); well-understood</td>
+</tr>
+<tr>
+<td>Dedup hash</td>
+<td>SHA256[:16] hex</td>
+<td>Full SHA256, MD5, URL string</td>
+<td>128-bit prefix: negligible collision risk, fast, compact</td>
+</tr>
+<tr>
+<td>Error taxonomy</td>
+<td>Custom exception hierarchy</td>
+<td>HTTP status codes only</td>
+<td>Status codes don't cover browser crashes, structure errors, bot blocks</td>
+</tr>
+<tr>
+<td>Storage default</td>
+<td>SQLite (stdlib)</td>
+<td>Redis, PostgreSQL, JSON files</td>
+<td>Zero external deps; crash-recovery; WAL mode handles concurrency</td>
+</tr>
+<tr>
+<td>Protocol typing</td>
+<td><code>typing.Protocol</code></td>
+<td>ABCs, dataclasses</td>
+<td>Structural subtyping — no import coupling, easier to mock in tests</td>
+</tr>
+<tr>
+<td>Glob matching</td>
+<td>Custom (fnmatch-based)</td>
+<td>Regex only, URL templates</td>
+<td>Glob is more readable for URL patterns; users shouldn't need regex for common cases</td>
+</tr>
+<tr>
+<td>Handler signature</td>
+<td><code>async def handler(ctx)</code></td>
+<td><code>async def handler(page, request, ...)</code></td>
+<td>Single context object is extensible without signature changes</td>
+</tr>
+<tr>
+<td>Batch flush size</td>
+<td>100 rows / 1 second</td>
+<td>Per-row, 1000 rows</td>
+<td>100 rows balances latency and write amplification at typical crawl speeds</td>
+</tr>
+<tr>
+<td>Error hook return</td>
+<td><code>ErrorAction</code> enum</td>
+<td>Raise sentinel, return dict</td>
+<td>Enum is explicit and finite; dict is stringly-typed and error-prone</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2026 Battle Creek LLC
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/Battle-Creek-LLC/zencrawler" target="_blank" rel="noopener" title="ZenCrawler on GitHub" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.footer", "content.code.copy", "content.code.annotate", "content.tabs.link", "search.suggest", "search.highlight", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
