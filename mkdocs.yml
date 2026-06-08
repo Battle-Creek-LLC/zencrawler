@@ -1,0 +1,79 @@
+site_name: ZenCrawler
+site_description: Async Python web crawler built on zendriver/CDP
+site_url: https://jstockdi.github.io/zencrawler/
+repo_url: https://github.com/jstockdi/zencrawler
+repo_name: jstockdi/zencrawler
+edit_uri: edit/main/docs/
+copyright: Copyright &copy; 2026 Battle Creek LLC
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - search.suggest
+    - search.highlight
+    - toc.follow
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.snippets
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - def_list
+
+plugins:
+  - search
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Guides:
+    - Routing Requests: guides/routing.md
+    - Storing Data: guides/storage.md
+    - Error Handling: guides/error-handling.md
+    - Concurrency & Rate Limiting: guides/concurrency.md
+  - API Reference:
+    - Crawler: api/crawler.md
+    - Router: api/router.md
+    - CrawlContext: api/context.md
+    - Request: api/request.md
+    - Results & Stats: api/results.md
+    - Errors: api/errors.md
+    - Configuration: api/config.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/jstockdi/zencrawler
+      name: ZenCrawler on GitHub

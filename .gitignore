@@ -9,3 +9,4 @@ crawl_state.db
 *.png
 crawl.log
 crawl_output.txt
+site/
