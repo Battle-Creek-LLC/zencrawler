@@ -1,8 +1,8 @@
 site_name: ZenCrawler
 site_description: Async Python web crawler built on zendriver/CDP
-site_url: https://jstockdi.github.io/zencrawler/
-repo_url: https://github.com/jstockdi/zencrawler
-repo_name: jstockdi/zencrawler
+site_url: https://battle-creek-llc.github.io/zencrawler/
+repo_url: https://github.com/Battle-Creek-LLC/zencrawler
+repo_name: Battle-Creek-LLC/zencrawler
 edit_uri: edit/main/docs/
 copyright: Copyright &copy; 2026 Battle Creek LLC
 
@@ -75,5 +75,5 @@ nav:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/jstockdi/zencrawler
+      link: https://github.com/Battle-Creek-LLC/zencrawler
       name: ZenCrawler on GitHub
