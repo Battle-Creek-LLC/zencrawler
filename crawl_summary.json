@@ -1,0 +1,82 @@
+[
+  {
+    "site": "books.toscrape.com",
+    "pages": 20,
+    "items": 0,
+    "dead_letters": 0,
+    "elapsed_s": 13.38,
+    "error": null
+  },
+  {
+    "site": "quotes.toscrape.com",
+    "pages": 103,
+    "items": 0,
+    "dead_letters": 0,
+    "elapsed_s": 22.59,
+    "error": null
+  },
+  {
+    "site": "webscraper-allinone",
+    "pages": 102,
+    "items": 0,
+    "dead_letters": 59,
+    "elapsed_s": 365.62,
+    "error": null
+  },
+  {
+    "site": "webscraper-scroll",
+    "pages": 103,
+    "items": 0,
+    "dead_letters": 59,
+    "elapsed_s": 234.14,
+    "error": null
+  },
+  {
+    "site": "scrapingcourse-ecommerce",
+    "pages": 103,
+    "items": 0,
+    "dead_letters": 16,
+    "elapsed_s": 105.05,
+    "error": null
+  },
+  {
+    "site": "toscrape-products",
+    "pages": 0,
+    "items": 0,
+    "dead_letters": 1,
+    "elapsed_s": 14.5,
+    "error": null
+  },
+  {
+    "site": "httpbin-anything",
+    "pages": 1,
+    "items": 0,
+    "dead_letters": 0,
+    "elapsed_s": 3.95,
+    "error": null
+  },
+  {
+    "site": "example-store-demo",
+    "pages": 0,
+    "items": 0,
+    "dead_letters": 1,
+    "elapsed_s": 3.86,
+    "error": null
+  },
+  {
+    "site": "prestashop-demo",
+    "pages": 1,
+    "items": 0,
+    "dead_letters": 0,
+    "elapsed_s": 4.73,
+    "error": null
+  },
+  {
+    "site": "magento-demo",
+    "pages": 1,
+    "items": 0,
+    "dead_letters": 0,
+    "elapsed_s": 4.03,
+    "error": null
+  }
+]
