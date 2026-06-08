@@ -221,13 +221,12 @@ class BrowserPool:
             # after the new browser is in idle (or give up and release).
             return
 
-        # Happy path: close only the tab, keep the browser warm.
+        # Happy path: navigate back to blank so the browser is clean for reuse.
+        # Do NOT close the tab — it IS the main_tab; closing it kills the browser.
         try:
-            # zendriver tabs can be closed via tab.close() if available.
-            if hasattr(handle.page, "close"):
-                await handle.page.close()
+            await handle.page.get("about:blank")
         except Exception:
-            log.debug("Could not close tab on browser return", exc_info=True)
+            log.debug("Could not reset tab to about:blank on return", exc_info=True)
 
         now = monotonic()
         self._last_used[id(browser)] = now
@@ -277,9 +276,8 @@ class BrowserPool:
         return browser
 
     async def _fresh_tab(self, browser: Any) -> Any:
-        """Navigate to about:blank to get a clean tab."""
-        tab = await browser.get("about:blank")
-        return tab
+        """Return the browser's main tab (navigation happens in _run_handler)."""
+        return browser.main_tab
 
     async def _close_browser(self, browser: Any) -> None:
         """Attempt to close *browser*, logging but not raising on failure."""
