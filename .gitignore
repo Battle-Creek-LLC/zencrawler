@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+crawl_data/
+crawl_data.db
+crawl_state.db
+*.jpg
+*.png
