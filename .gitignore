@@ -7,3 +7,5 @@ crawl_data.db
 crawl_state.db
 *.jpg
 *.png
+crawl.log
+crawl_output.txt
